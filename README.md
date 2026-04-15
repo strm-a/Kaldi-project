@@ -1,4 +1,4 @@
 - look into H2 vs test-containers for testing
-- check authentication, refresh JWT tokens and maybe use a tried and tested lib for login
+- check authentication, refresh JWT tokens and maybe use a tried and tested lib for login (keycloak yay)
 - Swagger document endpoints better
 - collection of calls for endpoints and make it very simple to test for the reviewer
