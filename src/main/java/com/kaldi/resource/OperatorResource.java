@@ -31,9 +31,9 @@ public class OperatorResource {
 
     // GET /operator/chats — all waiting + active chats
     @GET
-    @Path("/conversations")
-    @Operation(summary = "Get all open conversations (waiting and active)")
-    public Response getConversations() {
+    @Path("/chats")
+    @Operation(summary = "Get all open chats (waiting and active)")
+    public Response getChats() {
         List<ChatSummaryDTO> chats = Chat.findAllOpen()
                 .stream()
                 .map(ChatSummaryDTO::new)
@@ -43,9 +43,9 @@ public class OperatorResource {
 
     // POST /operator/chats/{chatId}/acquire — take over a waiting chat
     @POST
-    @Path("/conversations/{chatId}/acquire")
+    @Path("/chats/{chatId}/acquire")
     @Transactional
-    @Operation(summary = "Acquire a waiting conversation")
+    @Operation(summary = "Acquire a waiting chat")
     public Response acquireChat(
             @PathParam("chatId") Long chatId,
             @Context SecurityContext securityContext) {
