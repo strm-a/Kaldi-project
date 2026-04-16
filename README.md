@@ -76,31 +76,3 @@ curl -s -X POST http://localhost:8081/realms/kaldi/protocol/openid-connect/token
 
 Tests use H2 in-memory and mock OIDC via `@TestSecurity`, so they run with
 neither Postgres nor Keycloak.
-
-## Running in dev mode (for development, not reviewing)
-
-```bash
-./mvnw quarkus:dev
-```
-
-Dev mode uses Quarkus Dev Services for Keycloak (requires Docker) and expects
-you to run your own Postgres at `localhost:5432`. Schema + seed data come from
-[src/main/resources/import.sql](src/main/resources/import.sql) (Hibernate
-drops and recreates on every restart).
-
-## Project layout
-
-```
-.
-├── docker-compose.yml           # one-shot reviewer setup
-├── Dockerfile                   # multi-stage build (no local Maven needed)
-├── README.md
-├── pom.xml
-├── bruno/                       # Bruno API collection
-├── keycloak/
-│   └── kaldi-realm.json         # realm, roles, users, client (auto-imported)
-├── postgres/
-│   └── seed.sql                 # schema + seed data for prod/docker-compose
-└── src/
-    └── main/resources/import.sql  # dev-mode seed (Hibernate auto-runs)
-```
