@@ -4,6 +4,8 @@ import com.kaldi.enums.ChatStatus;
 import com.kaldi.enums.Room;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,6 +17,11 @@ public class Chat extends PanacheEntityBase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_chat")
     public Long idChat;
+
+    @Version
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    public Long version;
 
     @ManyToOne
     @JoinColumn(name = "id_user", nullable = false)

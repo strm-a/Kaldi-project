@@ -3,12 +3,10 @@ package com.kaldi.resource;
 import com.kaldi.entity.*;
 import com.kaldi.enums.ChatStatus;
 import com.kaldi.enums.Room;
-import com.kaldi.service.TokenService;
-import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,10 +18,6 @@ import static org.hamcrest.Matchers.*;
 @TestHTTPEndpoint(OperatorResource.class) // adds /operator prefix to all requests
 public class OperatorResourceTest {
 
-    @Inject
-    TokenService tokenService;
-
-    String token;
     Long chatId;
     Long operatorId;
 
@@ -37,7 +31,6 @@ public class OperatorResourceTest {
 
         Operator op = new Operator();
         op.username = "op1";
-        op.passwordHash = BcryptUtil.bcryptHash("pass");
         op.persist();
         operatorId = op.idOperator;
 
@@ -51,14 +44,12 @@ public class OperatorResourceTest {
         chat.status = ChatStatus.WAITING;
         chat.persist();
         chatId = chat.idChat;
-
-        token = tokenService.generateToken("op1", "operator");
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     public void testGetChats() {
         given()
-            .header("Authorization", "Bearer " + token)
         .when()
             .get("/chats")
         .then()
@@ -76,9 +67,9 @@ public class OperatorResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     public void testAcquireChat() {
         given()
-            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
         .when()
             .post("/chats/" + chatId + "/acquire")
@@ -88,9 +79,9 @@ public class OperatorResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     public void testAcquireChatNotFound() {
         given()
-            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
         .when()
             .post("/chats/99999/acquire")
@@ -99,17 +90,14 @@ public class OperatorResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     @Transactional
     public void testAcquireChatAlreadyActive() {
-        // Acquire it first
         given()
-            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .post("/chats/" + chatId + "/acquire");
 
-        // Try to acquire again
         given()
-            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
         .when()
             .post("/chats/" + chatId + "/acquire")
@@ -118,16 +106,14 @@ public class OperatorResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     @Transactional
     public void testSendMessage() {
-        // Acquire chat first
         given()
-            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .post("/chats/" + chatId + "/acquire");
 
         given()
-            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .body("""
                 {"message": "Hello, how can I help you?"}
@@ -140,9 +126,9 @@ public class OperatorResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     public void testSendMessageOnWaitingChat() {
         given()
-            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .body("""
                 {"message": "This should fail"}
@@ -154,9 +140,13 @@ public class OperatorResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     public void testGetMessages() {
         given()
-            .header("Authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .post("/chats/" + chatId + "/acquire");
+
+        given()
         .when()
             .get("/chats/" + chatId + "/messages")
         .then()
@@ -165,9 +155,27 @@ public class OperatorResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
+    public void testSendMessageValidationFailure() {
+        given()
+            .contentType(ContentType.JSON)
+            .post("/chats/" + chatId + "/acquire");
+
+        given()
+            .contentType(ContentType.JSON)
+            .body("""
+                {"message": "   "}
+                """)
+        .when()
+            .post("/chats/" + chatId + "/message")
+        .then()
+            .statusCode(400);
+    }
+
+    @Test
+    @TestSecurity(user = "op1", roles = {"operator"})
     public void testGetMessagesNotFound() {
         given()
-            .header("Authorization", "Bearer " + token)
         .when()
             .get("/chats/99999/messages")
         .then()

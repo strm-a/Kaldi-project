@@ -16,9 +16,6 @@ public class Operator extends PanacheEntityBase {
     @Column(nullable = false, unique = true)
     public String username;
 
-    @Column(name = "password_hash", nullable = false)
-    public String passwordHash;
-
     @Column(name = "created_at")
     public LocalDateTime createdAt;
 
@@ -27,8 +24,9 @@ public class Operator extends PanacheEntityBase {
         createdAt = LocalDateTime.now();
     }
 
-    // Helper method to find operator by username (needed for login)
+    // Case-insensitive — Keycloak lowercases usernames, but the seed uses camelCase
+    // (e.g. token carries "aliceoperator" while the row is "aliceOperator").
     public static Operator findByUsername(String username) {
-        return find("username", username).firstResult();
+        return find("lower(username) = ?1", username.toLowerCase()).firstResult();
     }
 }

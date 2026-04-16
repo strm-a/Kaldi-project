@@ -61,6 +61,19 @@ public class UserResourceTest {
     }
 
     @Test
+    public void testStartChatValidationFailure() {
+        given()
+            .contentType(ContentType.JSON)
+            .body(String.format("""
+                {"userId": %d, "room": "TEHNIKA", "message": "   "}
+                """, userId))
+        .when()
+            .post("/chat")
+        .then()
+            .statusCode(400);
+    }
+
+    @Test
     @Transactional
     public void testSendMessageInChat() {
         chatId = given()
@@ -76,9 +89,9 @@ public class UserResourceTest {
 
         given()
             .contentType(ContentType.JSON)
-            .body(String.format("""
-                {"userId": %d, "room": "TEHNIKA", "message": "Follow-up message"}
-                """, userId))
+            .body("""
+                {"message": "Follow-up message"}
+                """)
         .when()
             .post("/chat/" + chatId + "/message")
         .then()
