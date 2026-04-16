@@ -1,0 +1,34 @@
+meta {
+  name: Start chat
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{apiBase}}/user/chat
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "userId": {{userId}},
+    "room": "TEHNIKA",
+    "message": "Hi, my espresso machine won't turn on."
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.idChat) {
+    bru.setEnvVar("chatId", res.body.idChat);
+  }
+}
+
+docs {
+  Creates a new chat in WAITING status and saves the chatId to the environment
+  so the next requests can reference it.
+
+  Note: the database is seeded empty on first boot. If you get a 404 "User not
+  found", run the `INSERT INTO users` statement from the README first, or call
+  this against a user that exists.
+}

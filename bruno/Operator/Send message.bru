@@ -1,0 +1,21 @@
+meta {
+  name: Send message
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{apiBase}}/operator/chats/{{chatId}}/message
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "message": "Hi how can I help you today?"
+  }
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Login as aliceOperator
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{kcBase}}/realms/{{realm}}/protocol/openid-connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: password
+  username: {{username}}
+  password: {{password}}
+  client_id: {{clientId}}
+  client_secret: {{clientSecret}}
+}
+
+script:post-response {
+  bru.setEnvVar("token", res.body.access_token);
+  bru.setEnvVar("refreshToken", res.body.refresh_token);
+}
+
+docs {
+  Run this first. It fetches an access token from Keycloak and stores it in the
+  `token` environment variable. Every request under Operator/* uses it
+  automatically via `{{token}}`.
+}

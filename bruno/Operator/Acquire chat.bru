@@ -1,0 +1,15 @@
+meta {
+  name: Acquire chat
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{apiBase}}/operator/chats/{{chatId}}/acquire
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

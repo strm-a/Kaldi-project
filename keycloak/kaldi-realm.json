@@ -1,0 +1,42 @@
+{
+  "realm": "kaldi",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 900,
+  "roles": {
+    "realm": [
+      { "name": "operator", "description": "Support operator role (grants access to /operator/* endpoints)" }
+    ]
+  },
+  "users": [
+    {
+      "username": "aliceOperator",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Operator",
+      "email": "alice@kaldi.local",
+      "credentials": [
+        { "type": "password", "value": "alice", "temporary": false }
+      ],
+      "realmRoles": ["operator"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "quarkus-app",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "secret",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "defaultClientScopes": ["web-origins", "profile", "email", "microprofile-jwt"],
+      "optionalClientScopes": ["roles", "offline_access"]
+    }
+  ]
+}

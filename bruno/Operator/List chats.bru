@@ -1,0 +1,15 @@
+meta {
+  name: List chats
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{apiBase}}/operator/chats
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

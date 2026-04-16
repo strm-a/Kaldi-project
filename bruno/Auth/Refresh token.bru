@@ -1,0 +1,29 @@
+meta {
+  name: Refresh token
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{kcBase}}/realms/{{realm}}/protocol/openid-connect/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: refresh_token
+  client_id: {{clientId}}
+  client_secret: {{clientSecret}}
+  refresh_token: {{refreshToken}}
+}
+
+script:post-response {
+  bru.setEnvVar("token", res.body.access_token);
+  bru.setEnvVar("refreshToken", res.body.refresh_token);
+}
+
+docs {
+  Optional. Exchanges a stored refresh_token for a fresh access_token.
+  Requires `refreshToken` in the environment (set it manually from a prior
+  login response, or modify the Login request to also save it).
+}
