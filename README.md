@@ -50,7 +50,7 @@ The `docs/` folder can be read without starting the project. Swagger UI is only
 available while the API is running and should be used as generated reference,
 not as the primary testing tool.
 
-## Testing with Bruno (recommended)
+## Testing with Bruno
 
 1. Open Bruno → **Open Collection** → select the `bruno/` folder
 2. Pick the `local` environment (top-right)
