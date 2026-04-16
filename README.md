@@ -33,11 +33,22 @@ Ports:
 | Who      | Username        | Password | Role       | Where                      |
 |----------|-----------------|----------|------------|----------------------------|
 | Operator | `aliceOperator` | `alice`  | `operator` | Keycloak realm `kaldi`     |
+| Operator | `mikeOperator`  | `mike`   | `operator` | Keycloak realm `kaldi`     |
+| Operator | `lucyOperator`  | `lucy`   | `operator` | Keycloak realm `kaldi`     |
 | Admin    | `admin`         | `admin`  | -          | Keycloak master realm      |
 
 The app's Postgres is pre-seeded with 3 users (`ana`, `john`, `maja`),
 3 operators (`mikeOperator`, `lucyOperator`, `aliceOperator`), and 4 chats — see
 [postgres/seed.sql](postgres/seed.sql).
+
+## Documentation
+
+- Static endpoint docs: [docs/README.md](docs/README.md)
+- Live Swagger UI: http://localhost:8080/swagger-ui
+
+The `docs/` folder can be read without starting the project. Swagger UI is only
+available while the API is running and should be used as generated reference,
+not as the primary testing tool.
 
 ## Testing with Bruno (recommended)
 
@@ -53,20 +64,13 @@ Bruno collection layout:
 - `User/*` — anonymous endpoints (start chat, send message, get messages)
 - `Operator/*` — protected endpoints (list / acquire / message / get messages)
 
-## Testing with Swagger UI
+## Swagger UI
 
-1. Open http://localhost:8080/swagger-ui
-2. Grab a token (Bruno *Login as aliceOperator*, or curl below)
-3. Click **Authorize**, paste the token, click **Authorize** → **Close**
-4. Try any endpoint
+Open http://localhost:8080/swagger-ui when the project is running.
 
-Token via curl:
-
-```bash
-curl -s -X POST http://localhost:8081/realms/kaldi/protocol/openid-connect/token \
-  -d grant_type=password -d username=aliceOperator -d password=alice \
-  -d client_id=quarkus-app -d client_secret=secret | jq -r .access_token
-```
+Use Swagger UI to inspect endpoints, request bodies, response schemas, and the
+generated OpenAPI definition. For actually testing requests, use the Bruno
+collection above or another HTTP client.
 
 ## Running the test suite
 

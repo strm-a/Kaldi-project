@@ -1,7 +1,7 @@
 meta {
-  name: Refresh token
+  name: Login as lucyOperator
   type: http
-  seq: 4
+  seq: 3
 }
 
 post {
@@ -11,10 +11,11 @@ post {
 }
 
 body:form-urlencoded {
-  grant_type: refresh_token
+  grant_type: password
+  username: lucyOperator
+  password: lucy
   client_id: {{clientId}}
   client_secret: {{clientSecret}}
-  refresh_token: {{refreshToken}}
 }
 
 script:post-response {
@@ -23,7 +24,6 @@ script:post-response {
 }
 
 docs {
-  Optional. Exchanges a stored refresh_token for a fresh access_token.
-  Requires `refreshToken` in the environment (set it manually from a prior
-  login response, or modify the Login request to also save it).
+  Run this first to log in as `lucyOperator`. It fetches an access token from
+  Keycloak and stores it in the `token` environment variable.
 }

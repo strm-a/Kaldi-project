@@ -21,6 +21,30 @@
         { "type": "password", "value": "alice", "temporary": false }
       ],
       "realmRoles": ["operator"]
+    },
+    {
+      "username": "mikeOperator",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Mike",
+      "lastName": "Operator",
+      "email": "mike@kaldi.local",
+      "credentials": [
+        { "type": "password", "value": "mike", "temporary": false }
+      ],
+      "realmRoles": ["operator"]
+    },
+    {
+      "username": "lucyOperator",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Lucy",
+      "lastName": "Operator",
+      "email": "lucy@kaldi.local",
+      "credentials": [
+        { "type": "password", "value": "lucy", "temporary": false }
+      ],
+      "realmRoles": ["operator"]
     }
   ],
   "clients": [

@@ -14,13 +14,15 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
         description = """
             Backend for the Kaldi customer-support chat.
 
-            **Endpoints under `/user/*`** are anonymous — the mobile app identifies the user \
+            **Endpoints under `/user/*`** are anonymous - the mobile app identifies the user \
             by `userId` in the request body. No token required.
 
             **Endpoints under `/operator/*`** require a Keycloak-issued JWT with the \
-            `operator` role. In dev mode, get one from the Keycloak dev service \
-            (realm `kaldi`, client `quarkus-app`, user `aliceOperator` / password `alice`) and click \
-            "Authorize" in Swagger UI to attach it as a Bearer token.
+            `operator` role. In dev mode, the seeded operator accounts are \
+            `aliceOperator` / `alice`, `mikeOperator` / `mike`, and `lucyOperator` / `lucy`.
+
+            Swagger UI exposes this OpenAPI definition as live reference when the app is running.
+            Use Bruno or another HTTP client for request testing.
             """
     ),
     tags = {
