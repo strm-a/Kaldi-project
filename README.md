@@ -7,8 +7,6 @@ Quarkus backend for a customer-support chat, secured with Keycloak (OIDC).
 - Docker + Docker Compose
 - (Optional) [Bruno](https://www.usebruno.com/) to run the prepared API calls
 
-Nothing else — no local Java, Maven, Postgres or Keycloak install required.
-
 ## One-command startup
 
 ```bash
@@ -26,7 +24,6 @@ Ports:
 | API      | http://localhost:8080                     |
 | Swagger  | http://localhost:8080/swagger-ui          |
 | Keycloak | http://localhost:8081 (admin / admin)     |
-| Postgres | localhost:5432 (kaldi / kaldi123)         |
 
 ## Credentials
 
@@ -35,7 +32,6 @@ Ports:
 | Operator | `aliceOperator` | `alice`  | `operator` | Keycloak realm `kaldi`     |
 | Operator | `mikeOperator`  | `mike`   | `operator` | Keycloak realm `kaldi`     |
 | Operator | `lucyOperator`  | `lucy`   | `operator` | Keycloak realm `kaldi`     |
-| Admin    | `admin`         | `admin`  | -          | Keycloak master realm      |
 
 The app's Postgres is pre-seeded with 3 users (`ana`, `john`, `maja`),
 3 operators (`mikeOperator`, `lucyOperator`, `aliceOperator`), and 4 chats — see
@@ -50,7 +46,7 @@ The `docs/` folder can be read without starting the project. Swagger UI is only
 available while the API is running and should be used as generated reference,
 not as the primary testing tool.
 
-## Testing with Bruno
+## Testing with [Bruno](https://www.usebruno.com/)
 
 1. Open Bruno → **Open Collection** → select the `bruno/` folder
 2. Pick the `local` environment (top-right)
@@ -59,7 +55,7 @@ not as the primary testing tool.
 
 Bruno collection layout:
 
-- `Auth/Login as aliceOperator` — OIDC password grant, stores `token` + `refreshToken`
+- `Auth/Login as aliceOperator` (or any other operators) — OIDC password grant, stores `token` + `refreshToken`
 - `Auth/Refresh token` — exchanges `refreshToken` for a fresh access token
 - `User/*` — anonymous endpoints (start chat, send message, get messages)
 - `Operator/*` — protected endpoints (list / acquire / message / get messages)
