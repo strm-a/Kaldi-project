@@ -1,45 +1,81 @@
-# API Docs
+# Kaldi Support API Reference
 
-Static endpoint reference for `kaldi-support-api`. Use this folder when you want
-to review the API without starting the project.
+Static reference for `kaldi-support-api`.
 
-## Base URL
+Use this document when you want to review the contract without starting the
+project. If the API is running, the generated Swagger UI is available at
+`http://localhost:8080/swagger-ui`.
 
-Local API base URL: `http://localhost:8080`
+## Quick Reference
 
-## Authentication
+| Item | Value |
+|------|-------|
+| Base URL | `http://localhost:8080` |
+| Content type | `application/json` |
+| Anonymous endpoints | `/user/*` |
+| Protected endpoints | `/operator/*` |
+| Live generated docs | `http://localhost:8080/swagger-ui` |
 
-| Path prefix   | Auth         | Notes                                                       |
-|---------------|--------------|-------------------------------------------------------------|
-| `/user/*`     | None         | The mobile app identifies the user by `userId` in the body. |
-| `/operator/*` | Bearer JWT   | Token must come from Keycloak and include the `operator` role. |
+## Authentication Model
 
-Operator authentication is handled by Keycloak directly. There is no backend
-`/auth` endpoint in this service.
+| Area | Auth | Identity source | Notes |
+|------|------|-----------------|-------|
+| `/user/*` | None | `userId` in the request body or the existing chat relation | Intended for the mobile user flow |
+| `/operator/*` | Bearer JWT | `preferred_username` claim from Keycloak | Token must include the `operator` role |
 
-## Dev Keycloak Operators
+Operator authentication is handled by Keycloak. This service does not expose a
+backend `/auth` endpoint.
 
-| Username        | Password | Role       |
-|-----------------|----------|------------|
-| `aliceOperator` | `alice`  | `operator` |
-| `mikeOperator`  | `mike`   | `operator` |
-| `lucyOperator`  | `lucy`   | `operator` |
+## Dev Operator Accounts
 
-## Enums
+| Username | Password | Role |
+|----------|----------|------|
+| `aliceOperator` | `alice` | `operator` |
+| `mikeOperator` | `mike` | `operator` |
+| `lucyOperator` | `lucy` | `operator` |
 
-- `Room`: `TEHNIKA`, `STORITVE`, `POGOVOR`
-- `ChatStatus`: `WAITING`, `ACTIVE`, `CLOSED`
-- `SenderType`: `USER`, `OPERATOR`
+## Common Behavior
 
-## Endpoints
+- All request and response bodies are JSON.
+- Timestamps are returned as ISO-8601 local date-times such as `2026-04-16T10:15:30`.
+- Validation failures return `400 Bad Request`.
+- Protected endpoints return `401 Unauthorized` for a missing or invalid token.
+- Protected endpoints return `403 Forbidden` when the token is valid but the caller is not allowed to perform the action.
+
+## Domain Values
+
+| Enum | Values |
+|------|--------|
+| `Room` | `TEHNIKA`, `STORITVE`, `POGOVOR` |
+| `ChatStatus` | `WAITING`, `ACTIVE`, `CLOSED` |
+| `SenderType` | `USER`, `OPERATOR` |
+
+## Endpoint Index
+
+| Method | Path | Auth | Returns | Purpose |
+|--------|------|------|---------|---------|
+| `POST` | `/user/chat` | None | `Chat` | Create a new waiting chat and store the first user message |
+| `POST` | `/user/chat/{chatId}/message` | None | `Message` | Add a user message to an existing chat |
+| `GET` | `/user/chat/{chatId}/messages` | None | `Message[]` | Fetch all messages in a chat |
+| `GET` | `/operator/chats` | Bearer JWT | `ChatSummaryDTO[]` | List all open chats |
+| `POST` | `/operator/chats/{chatId}/acquire` | Bearer JWT | `ChatDetailDTO` | Assign a waiting chat to the authenticated operator |
+| `POST` | `/operator/chats/{chatId}/message` | Bearer JWT | `Message` | Add an operator reply to an active chat |
+| `GET` | `/operator/chats/{chatId}/messages` | Bearer JWT | `Message[]` | Fetch the full message history for an acquired chat |
+
+## User Endpoints
 
 ### `POST /user/chat`
 
 Creates a new `WAITING` chat and stores the first user message.
 
-Auth: none
+| Item | Value |
+|------|-------|
+| Auth | None |
+| Request body | `userId`, `room`, `message` |
+| Success | `200 OK` with `Chat` |
+| Errors | `400 Bad Request`, `404 User not found` |
 
-Request body:
+Request body example:
 
 ```json
 {
@@ -49,19 +85,19 @@ Request body:
 }
 ```
 
-Success: `200 OK` with a `Chat` response
-
-Errors: `404 User not found`
-
 ### `POST /user/chat/{chatId}/message`
 
 Adds a new user message to an existing chat.
 
-Auth: none
+| Item | Value |
+|------|-------|
+| Auth | None |
+| Path parameter | `chatId` |
+| Request body | `message` |
+| Success | `200 OK` with `Message` |
+| Errors | `400 Bad Request`, `404 Chat not found` |
 
-Path parameter: `chatId`
-
-Request body:
+Request body example:
 
 ```json
 {
@@ -69,55 +105,55 @@ Request body:
 }
 ```
 
-Success: `200 OK` with a `Message` response
-
-Errors: `404 Chat not found`
-
 ### `GET /user/chat/{chatId}/messages`
 
 Returns every message in the chat ordered from oldest to newest.
 
-Auth: none
+| Item | Value |
+|------|-------|
+| Auth | None |
+| Path parameter | `chatId` |
+| Success | `200 OK` with `Message[]` |
+| Errors | `404 Chat not found` |
 
-Path parameter: `chatId`
-
-Success: `200 OK` with `Message[]`
-
-Errors: `404 Chat not found`
+## Operator Endpoints
 
 ### `GET /operator/chats`
 
-Returns all open chats across the dashboard. The list includes chats in
-`WAITING` and `ACTIVE` status.
+Returns every open chat shown in the operator dashboard. The list includes chats
+in `WAITING` and `ACTIVE` status.
 
-Auth: Bearer JWT with role `operator`
-
-Success: `200 OK` with `ChatSummaryDTO[]`
-
-Errors: `401 Missing or invalid JWT`, `403 Missing operator role`
+| Item | Value |
+|------|-------|
+| Auth | Bearer JWT with role `operator` |
+| Success | `200 OK` with `ChatSummaryDTO[]` |
+| Errors | `401 Unauthorized`, `403 Forbidden` |
 
 ### `POST /operator/chats/{chatId}/acquire`
 
 Assigns a waiting chat to the authenticated operator and moves it to `ACTIVE`.
 
-Auth: Bearer JWT with role `operator`
-
-Path parameter: `chatId`
-
-Success: `200 OK` with `ChatDetailDTO`
-
-Errors: `401 Missing or invalid JWT`, `403 Missing operator role`, `404 Chat not found`, `409 Chat is not in WAITING status`
+| Item | Value |
+|------|-------|
+| Auth | Bearer JWT with role `operator` |
+| Path parameter | `chatId` |
+| Success | `200 OK` with `ChatDetailDTO` |
+| Errors | `401 Unauthorized`, `403 Forbidden`, `404 Chat not found`, `409 Chat is not in WAITING status` |
 
 ### `POST /operator/chats/{chatId}/message`
 
 Adds an operator reply to an active chat. Only the operator who acquired the
 chat can send messages to it.
 
-Auth: Bearer JWT with role `operator`
+| Item | Value |
+|------|-------|
+| Auth | Bearer JWT with role `operator` |
+| Path parameter | `chatId` |
+| Request body | `message` |
+| Success | `200 OK` with `Message` |
+| Errors | `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Chat not found`, `409 Chat is not ACTIVE` |
 
-Path parameter: `chatId`
-
-Request body:
+Request body example:
 
 ```json
 {
@@ -125,28 +161,34 @@ Request body:
 }
 ```
 
-Success: `200 OK` with a `Message` response
-
-Errors: `401 Missing or invalid JWT`, `403 Missing operator role or wrong assigned operator`, `404 Chat not found`, `409 Chat is not ACTIVE`
-
 ### `GET /operator/chats/{chatId}/messages`
 
 Returns the full message history for a chat. Only the operator who acquired the
 chat can view it.
 
-Auth: Bearer JWT with role `operator`
+| Item | Value |
+|------|-------|
+| Auth | Bearer JWT with role `operator` |
+| Path parameter | `chatId` |
+| Success | `200 OK` with `Message[]` |
+| Errors | `401 Unauthorized`, `403 Forbidden`, `404 Chat not found` |
 
-Path parameter: `chatId`
-
-Success: `200 OK` with `Message[]`
-
-Errors: `401 Missing or invalid JWT`, `403 Missing operator role or wrong assigned operator`, `404 Chat not found`
-
-## Shared Response Shapes
+## Response Shapes
 
 ### `Chat`
 
 Returned by `POST /user/chat`.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `idChat` | `number` | Chat identifier |
+| `version` | `number` | Optimistic-lock version |
+| `user` | `object` | Full user entity |
+| `operator` | `object \| null` | `null` until the chat is acquired |
+| `room` | `Room` | Support category |
+| `status` | `ChatStatus` | Initial value is `WAITING` |
+| `createdAt` | `string` | Chat creation timestamp |
+| `acquiredAt` | `string \| null` | Set when an operator acquires the chat |
 
 ```json
 {
@@ -169,6 +211,15 @@ Returned by `POST /user/chat`.
 
 Returned by both user and operator message endpoints.
 
+| Field | Type | Notes |
+|-------|------|-------|
+| `idMessage` | `number` | Message identifier |
+| `senderType` | `SenderType` | `USER` or `OPERATOR` |
+| `senderId` | `number` | User or operator ID |
+| `content` | `string` | Message body |
+| `timeSent` | `string` | Message timestamp |
+| `chatId` | `number` | Owning chat ID |
+
 ```json
 {
   "idMessage": 12,
@@ -184,6 +235,12 @@ Returned by both user and operator message endpoints.
 
 Returned by `GET /operator/chats`.
 
+| Field | Type | Notes |
+|-------|------|-------|
+| `idChat` | `number` | Chat identifier |
+| `status` | `ChatStatus` | Open chat status |
+| `createdAt` | `string` | Chat creation timestamp |
+
 ```json
 {
   "idChat": 1,
@@ -195,6 +252,16 @@ Returned by `GET /operator/chats`.
 ### `ChatDetailDTO`
 
 Returned by `POST /operator/chats/{chatId}/acquire`.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `idChat` | `number` | Chat identifier |
+| `status` | `ChatStatus` | Current chat status |
+| `room` | `Room` | Support category |
+| `username` | `string` | Username of the customer who opened the chat |
+| `createdAt` | `string` | Chat creation timestamp |
+| `acquiredAt` | `string \| null` | Acquisition timestamp |
+| `messages` | `Message[]` | Full message history |
 
 ```json
 {
